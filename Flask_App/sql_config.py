@@ -167,15 +167,41 @@ Query_Config["210"]["ROAD_ID_PARKING_METERS"] = """ SELECT
 
 
 Query_Config["210"]["ROAD_ID_NUMBER_OF_TWO_WHEELERS"] = """ SELECT
-                                                        FOOTPATH_SIDE,
-                                                        CEIL(
-                                                            COALESCE(ROAD_LENGTH_ALLOCATED_TO_PARKING::NUMERIC, 0) / 150.0
-                                                        ) AS PARKING_METERS
-                                                    FROM
-                                                        ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING  """  
+                                                                FOOTPATH_SIDE,
+                                                                CEIL((COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * 0.15)) AS NUMBER_OF_TWO_WHEELERS
+                                                            FROM
+                                                                ROAD_ID_FOOTPATH_LENGTH  """  
 
 
+Query_Config["210"]["ROAD_ID_PARKING_MARKING_2W"] = """ SELECT
+                                                            FOOTPATH_SIDE,
+                                                            CEIL(
+                                                                (
+                                                                    COALESCE(NUMBER_OF_TWO_WHEELERS::NUMERIC, 0) * 4 * 0.15
+                                                                )
+                                                            ) AS PARKING_MARKING_2W
+                                                        FROM
+                                                            ROAD_ID_NUMBER_OF_TWO_WHEELERS  """  
 
+
+Query_Config["210"]["ROAD_ID_NUMBER_OF_FOUR_WHEELERS"] = """    SELECT
+                                                                    FOOTPATH_SIDE,
+                                                                    CEIL(
+                                                                        (COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * 0.15 / 5)
+                                                                    ) AS NUMBER_OF_FOUR_WHEELERS
+                                                                FROM
+                                                                    ROAD_ID_FOOTPATH_LENGTH  """  
+
+
+Query_Config["210"]["ROAD_ID_PARKING_MARKING_4W"] = """ SELECT
+                                                            FOOTPATH_SIDE,
+                                                            CEIL(
+                                                                    (
+                                                                        COALESCE(NUMBER_OF_FOUR_WHEELERS::NUMERIC, 0) * 7 * 0.15
+                                                                    )
+                                                                ) AS PARKING_MARKING_4W
+                                                        FROM
+                                                            ROAD_ID_NUMBER_OF_TWO_WHEELERS  """                                                                   
 
 
 

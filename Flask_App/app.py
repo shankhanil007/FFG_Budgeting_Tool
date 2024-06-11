@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for 
 import psycopg2 
 import six
-from config import Query_Config
+from sql_config import Query_Config
 
 app = Flask(__name__) 
 
