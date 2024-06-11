@@ -63,17 +63,17 @@ Query_Config["210"]["ROAD_ID_FOOTPATH_LENGTH"] = """   SELECT
                                                             FROM
                                                                 TESTDB1.MANUAL_ENTRY.MANUAL_ENTRY   """                                                                                               
 
-Query_Config["210"]["ROAD_ID_TRANSFORMER_COUNT"] = """  SELECT
-                                                            ROAD_ID.FOOTPATH_SIDE,
-                                                            COUNT(RITC.FOOTPATH_SIDE) AS TRANSFORMER_ISSUE_COUNT
-                                                        FROM
-                                                            TESTDB1.ROAD_ID.ROAD_ID AS ROAD_ID
-                                                            LEFT JOIN TESTDB1.ISSUE_POINT.ISSUE_POINT AS RITC 
-                                                            ON ROAD_ID.FOOTPATH_SIDE = RITC.FOOTPATH_SIDE
-                                                            AND RITC.ISSUE_TYPE = 'B-Transformers'
-                                                        GROUP BY
-                                                            ROAD_ID.FOOTPATH_SIDE
-                                                        """   
+Query_Config["210"]["ROAD_ID_TRANSFORMER_ISSUE_COUNT"] = """    SELECT
+                                                                    ROAD_ID.FOOTPATH_SIDE,
+                                                                    COUNT(RITC.FOOTPATH_SIDE) AS TRANSFORMER_ISSUE_COUNT
+                                                                FROM
+                                                                    TESTDB1.ROAD_ID.ROAD_ID AS ROAD_ID
+                                                                    LEFT JOIN TESTDB1.ISSUE_POINT.ISSUE_POINT AS RITC 
+                                                                    ON ROAD_ID.FOOTPATH_SIDE = RITC.FOOTPATH_SIDE
+                                                                    AND RITC.ISSUE_TYPE = 'B-Transformers'
+                                                                GROUP BY
+                                                                    ROAD_ID.FOOTPATH_SIDE
+                                                                """   
 
 Query_Config["210"]["ROAD_ID_PARKING_ISSUE_LENGTH"] = """   SELECT
                                                                 ROAD_ID.FOOTPATH_SIDE,
@@ -201,7 +201,7 @@ Query_Config["210"]["ROAD_ID_PARKING_MARKING_4W"] = """ SELECT
                                                                     )
                                                                 ) AS PARKING_MARKING_4W
                                                         FROM
-                                                            ROAD_ID_NUMBER_OF_TWO_WHEELERS  """                                                                   
+                                                            ROAD_ID_NUMBER_OF_FOUR_WHEELERS  """                                                                   
 
 
 
