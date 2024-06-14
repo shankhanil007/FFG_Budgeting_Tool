@@ -1,204 +1,151 @@
 SQL_CONFIG = dict()
 
-
-# SQL_CONFIG["ROAD_ID_WITH_LANDUSE"] = """   SELECT
-#                                                         FOOTPATH_SIDE,
-#                                                         LANDUSE
-#                                                     FROM
-#                                                         (
-#                                                             SELECT
-#                                                                 FOOTPATH_SIDE,
-#                                                                 LANDUSE,
-#                                                                 TYPE_COUNT,
-#                                                                 ROW_NUMBER() OVER (
-#                                                                     PARTITION BY
-#                                                                         FOOTPATH_SIDE
-#                                                                     ORDER BY
-#                                                                         TYPE_COUNT DESC,
-#                                                                         LANDUSE
-#                                                                 ) AS RN
-#                                                             FROM
-#                                                                 (
-#                                                                     SELECT
-#                                                                         FOOTPATH_SIDE,
-#                                                                         LANDUSE,
-#                                                                         COUNT(*) AS TYPE_COUNT
-#                                                                     FROM
-#                                                                         {SCHEMA}.PROFILE_DATA
-#                                                                     GROUP BY
-#                                                                         FOOTPATH_SIDE,
-#                                                                         LANDUSE
-#                                                                 ) AS SUB_QUERY_1
-#                                                         ) AS SUB_QUERY_2
-#                                                     WHERE
-#                                                         RN = 1  """
+SQL_CONFIG["ROAD_ID_FOOTPATH_LENGTH"] = """     SELECT
+                                                    FOOTPATH_SIDE,
+                                                    FOOTPATH_LENGTH
+                                                FROM
+                                                    {SCHEMA}.MANUAL_ENTRY   """                                                                                               
 
 
-
-
-# SQL_CONFIG["ROAD_ID_WITH_AVG_WIDTH_HEIGHT"] = """  SELECT
-#                                                                 road_id.FOOTPATH_SIDE,
-#                                                                 FOOTPATH_WIDTH,
-#                                                                 FOOTPATH_HEIGHT
-#                                                             FROM
-#                                                                 {SCHEMA}.ROAD_ID AS road_id
-#                                                             LEFT JOIN (
-#                                                                 SELECT
-#                                                                     FOOTPATH_SIDE,
-#                                                                     ROUND(AVG(FOOTPATH_WIDTH)::NUMERIC, 1) AS FOOTPATH_WIDTH,
-#                                                                     ROUND(AVG(FOOTPATH_HEIGHT)::NUMERIC, 1) AS FOOTPATH_HEIGHT
-#                                                                 FROM
-#                                                                     {SCHEMA}.PROFILE_DATA
-#                                                                 GROUP BY
-#                                                                     FOOTPATH_SIDE
-#                                                             ) AS RIAWH ON road_id.FOOTPATH_SIDE = RIAWH.FOOTPATH_SIDE   """         
-
-
-SQL_CONFIG["ROAD_ID_FOOTPATH_LENGTH"] = """   SELECT
-                                                                FOOTPATH_SIDE,
-                                                                FOOTPATH_LENGTH
-                                                            FROM
-                                                                {SCHEMA}.MANUAL_ENTRY   """                                                                                               
-
-SQL_CONFIG["ROAD_ID_TRANSFORMER_ISSUE_COUNT"] = """    SELECT
-                                                                    ROAD_ID.FOOTPATH_SIDE,
-                                                                    COUNT(RITC.FOOTPATH_SIDE) AS TRANSFORMER_ISSUE_COUNT
-                                                                FROM
-                                                                    {SCHEMA}.ROAD_ID AS ROAD_ID
-                                                                    LEFT JOIN {SCHEMA}.ISSUE_POINT AS RITC 
-                                                                    ON ROAD_ID.FOOTPATH_SIDE = RITC.FOOTPATH_SIDE
-                                                                    AND RITC.ISSUE_TYPE = 'B-Transformers'
-                                                                GROUP BY
-                                                                    ROAD_ID.FOOTPATH_SIDE
-                                                                """   
-
-SQL_CONFIG["ROAD_ID_PARKING_ISSUE_LENGTH"] = """   SELECT
-                                                                ROAD_ID.FOOTPATH_SIDE,
-                                                                COALESCE(PARKING_ISSUE_LENGTH, 0) AS PARKING_ISSUE_LENGTH
-                                                            FROM
-                                                                {SCHEMA}.ROAD_ID AS ROAD_ID
-                                                                LEFT JOIN (
-                                                                    SELECT
-                                                                        FOOTPATH_SIDE,
-                                                                        SUM(CEIL(LENGTH)) AS PARKING_ISSUE_LENGTH
-                                                                    FROM
-                                                                        {SCHEMA}.ISSUE_LINE
-                                                                    WHERE
-                                                                        ISSUE_TYPE = 'B-Encroachment by parking'
-                                                                    GROUP BY
-                                                                        FOOTPATH_SIDE
-                                                                ) AS PIL ON ROAD_ID.FOOTPATH_SIDE = PIL.FOOTPATH_SIDE   """   
-
-
-SQL_CONFIG["ROAD_ID_NO_PARKING_SIGNAGE_COUNT"] = """   SELECT
-                                                                    ROAD_ID.FOOTPATH_SIDE,
-                                                                    RIPIL.NO_PARKING_SIGNAGE_COUNT
-                                                                FROM
-                                                                    {SCHEMA}.ROAD_ID AS ROAD_ID
-                                                                    LEFT JOIN (
-                                                                        SELECT
-                                                                            FOOTPATH_SIDE,
-                                                                            CEIL((COALESCE(PARKING_ISSUE_LENGTH, 0) / 50.0)) AS NO_PARKING_SIGNAGE_COUNT
-                                                                        FROM
-                                                                            ROAD_ID_PARKING_ISSUE_LENGTH
-                                                                    ) AS RIPIL ON ROAD_ID.FOOTPATH_SIDE = RIPIL.FOOTPATH_SIDE   """   
-
-
-SQL_CONFIG["ROAD_ID_IS_THERE_ENCROACHMENT"] = """  SELECT
-                                                                FOOTPATH_SIDE,
-                                                                CASE
-                                                                    WHEN COALESCE(RIPIL.PARKING_ISSUE_LENGTH, 0) > 0 THEN 'Y'
-                                                                    ELSE 'N'
-                                                                END AS IS_THERE_ENCROACHMENT
-                                                            FROM
-                                                                ROAD_ID_PARKING_ISSUE_LENGTH AS RIPIL   """   
-
-
-SQL_CONFIG["ROAD_ID_IS_PARKING_FEASIBLE"] = """    SELECT
-                                                                ROAD_ID.FOOTPATH_SIDE,
-                                                                COALESCE(PAQ.IS_PARKING_FEASIBLE, 'Y') AS IS_PARKING_FEASIBLE
-                                                            FROM
-                                                                {SCHEMA}.ROAD_ID AS ROAD_ID
-                                                                LEFT JOIN {SCHEMA}.POST_AUDIT_QUESTIONS PAQ ON PAQ.FOOTPATH_SIDE = ROAD_ID.FOOTPATH_SIDE   """   
-
-
-SQL_CONFIG["ROAD_ID_PARKING_REQUIRED"] = """   SELECT
-                                                            RIITE.FOOTPATH_SIDE,
-                                                            CASE
-                                                                WHEN IS_THERE_ENCROACHMENT = 'Y'
-                                                                AND IS_PARKING_FEASIBLE = 'Y' THEN 'Y'
-                                                                ELSE 'N'
-                                                            END AS PARKING_REQUIRED
+SQL_CONFIG["ROAD_ID_TRANSFORMER_ISSUE_COUNT"] = """     SELECT
+                                                            ROAD_ID.FOOTPATH_SIDE,
+                                                            COUNT(RITIC.FOOTPATH_SIDE) AS TRANSFORMER_ISSUE_COUNT
                                                         FROM
-                                                            ROAD_ID_IS_THERE_ENCROACHMENT RIITE
-                                                            LEFT JOIN ROAD_ID_IS_PARKING_FEASIBLE AS RIIPF ON RIITE.FOOTPATH_SIDE = RIIPF.FOOTPATH_SIDE   """ 
+                                                            {SCHEMA}.ROAD_ID AS ROAD_ID
+                                                            LEFT JOIN {SCHEMA}.ISSUE_POINT AS RITIC 
+                                                            ON ROAD_ID.FOOTPATH_SIDE = RITIC.FOOTPATH_SIDE
+                                                            AND RITIC.ISSUE_TYPE = 'B-Transformers'
+                                                        GROUP BY
+                                                            ROAD_ID.FOOTPATH_SIDE   """   
 
 
-SQL_CONFIG["ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING"] = """   SELECT
-                                                                            RIPR.FOOTPATH_SIDE,
-                                                                            CASE
-                                                                                WHEN PARKING_REQUIRED = 'Y' THEN CEIL((COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * 0.3))
-                                                                                ELSE 0
-                                                                            END AS ROAD_LENGTH_ALLOCATED_TO_PARKING
-                                                                        FROM
-                                                                            ROAD_ID_PARKING_REQUIRED AS RIPR
-                                                                            LEFT JOIN ROAD_ID_FOOTPATH_LENGTH AS RIFL ON RIPR.FOOTPATH_SIDE = RIFL.FOOTPATH_SIDE  """                   
+SQL_CONFIG["ROAD_ID_PARKING_ISSUE_LENGTH"] = """    SELECT
+                                                        ROAD_ID.FOOTPATH_SIDE,
+                                                        COALESCE(PARKING_ISSUE_LENGTH, 0) AS PARKING_ISSUE_LENGTH
+                                                    FROM
+                                                        {SCHEMA}.ROAD_ID AS ROAD_ID
+                                                        LEFT JOIN (
+                                                            SELECT
+                                                                FOOTPATH_SIDE,
+                                                                SUM(CEIL(LENGTH)) AS PARKING_ISSUE_LENGTH
+                                                            FROM
+                                                                {SCHEMA}.ISSUE_LINE
+                                                            WHERE
+                                                                ISSUE_TYPE = 'B-Encroachment by parking'
+                                                            GROUP BY
+                                                                FOOTPATH_SIDE
+                                                        ) AS RIPIL ON ROAD_ID.FOOTPATH_SIDE = RIPIL.FOOTPATH_SIDE   """   
 
 
-SQL_CONFIG["ROAD_ID_PARKING_SIGNAGE"] = """    SELECT
-                                                            FOOTPATH_SIDE,
-                                                            CEIL(
-                                                                COALESCE(ROAD_LENGTH_ALLOCATED_TO_PARKING::NUMERIC, 0) / 50.0
-                                                            ) AS PARKING_SIGNAGE
+SQL_CONFIG["ROAD_ID_NO_PARKING_SIGNAGE_COUNT"] = """    SELECT
+                                                            ROAD_ID.FOOTPATH_SIDE,
+                                                            RIPIL.NO_PARKING_SIGNAGE_COUNT
                                                         FROM
-                                                            ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING  """                                                                
+                                                            {SCHEMA}.ROAD_ID AS ROAD_ID
+                                                            LEFT JOIN (
+                                                                SELECT
+                                                                    FOOTPATH_SIDE,
+                                                                    CEIL((COALESCE(PARKING_ISSUE_LENGTH, 0) / {INTERVAL})) AS NO_PARKING_SIGNAGE_COUNT
+                                                                FROM
+                                                                    ROAD_ID_PARKING_ISSUE_LENGTH
+                                                            ) AS RIPIL ON ROAD_ID.FOOTPATH_SIDE = RIPIL.FOOTPATH_SIDE   """   
 
 
-SQL_CONFIG["ROAD_ID_PARKING_METERS"] = """ SELECT
+SQL_CONFIG["ROAD_ID_IS_THERE_ENCROACHMENT"] = """   SELECT
+                                                        FOOTPATH_SIDE,
+                                                        CASE
+                                                            WHEN COALESCE(RIPIL.PARKING_ISSUE_LENGTH, 0) > 0 THEN 'Y'
+                                                            ELSE 'N'
+                                                        END AS IS_THERE_ENCROACHMENT
+                                                    FROM
+                                                        ROAD_ID_PARKING_ISSUE_LENGTH AS RIPIL   """   
+
+
+SQL_CONFIG["ROAD_ID_IS_PARKING_FEASIBLE"] = """     SELECT
+                                                        ROAD_ID.FOOTPATH_SIDE,
+                                                        COALESCE(PAQ.IS_PARKING_FEASIBLE, 'Y') AS IS_PARKING_FEASIBLE
+                                                    FROM
+                                                        {SCHEMA}.ROAD_ID AS ROAD_ID
+                                                        LEFT JOIN {SCHEMA}.POST_AUDIT_QUESTIONS PAQ ON PAQ.FOOTPATH_SIDE = ROAD_ID.FOOTPATH_SIDE   """   
+
+
+SQL_CONFIG["ROAD_ID_PARKING_REQUIRED"] = """    SELECT
+                                                    RIITE.FOOTPATH_SIDE,
+                                                    CASE
+                                                        WHEN IS_THERE_ENCROACHMENT = 'Y'
+                                                        AND IS_PARKING_FEASIBLE = 'Y' THEN 'Y'
+                                                        ELSE 'N'
+                                                    END AS PARKING_REQUIRED
+                                                FROM
+                                                    ROAD_ID_IS_THERE_ENCROACHMENT RIITE
+                                                    LEFT JOIN ROAD_ID_IS_PARKING_FEASIBLE AS RIIPF ON RIITE.FOOTPATH_SIDE = RIIPF.FOOTPATH_SIDE   """ 
+
+
+SQL_CONFIG["ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING"] = """    SELECT
+                                                                    RIPR.FOOTPATH_SIDE,
+                                                                    CASE
+                                                                        WHEN PARKING_REQUIRED = 'Y' THEN CEIL((COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * {ROAD_SEGMENT_PERCENTAGE}))
+                                                                        ELSE 0
+                                                                    END AS ROAD_LENGTH_ALLOCATED_TO_PARKING
+                                                                FROM
+                                                                    ROAD_ID_PARKING_REQUIRED AS RIPR
+                                                                    LEFT JOIN ROAD_ID_FOOTPATH_LENGTH AS RIFL ON RIPR.FOOTPATH_SIDE = RIFL.FOOTPATH_SIDE  """                   
+
+
+SQL_CONFIG["ROAD_ID_PARKING_SIGNAGE_COUNT"] = """   SELECT
                                                         FOOTPATH_SIDE,
                                                         CEIL(
-                                                            COALESCE(ROAD_LENGTH_ALLOCATED_TO_PARKING::NUMERIC, 0) / 150.0
-                                                        ) AS PARKING_METERS
+                                                            COALESCE(ROAD_LENGTH_ALLOCATED_TO_PARKING::NUMERIC, 0) / {INTERVAL}
+                                                        ) AS PARKING_SIGNAGE
                                                     FROM
-                                                        ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING  """  
+                                                        ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING  """                                                                
 
 
-SQL_CONFIG["ROAD_ID_NUMBER_OF_TWO_WHEELERS"] = """ SELECT
-                                                                FOOTPATH_SIDE,
-                                                                CEIL((COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * 0.15)) AS NUMBER_OF_TWO_WHEELERS
-                                                            FROM
-                                                                ROAD_ID_FOOTPATH_LENGTH  """  
+SQL_CONFIG["ROAD_ID_PARKING_METERS"] = """  SELECT
+                                                FOOTPATH_SIDE,
+                                                CEIL(
+                                                    COALESCE(ROAD_LENGTH_ALLOCATED_TO_PARKING::NUMERIC, 0) / {INTERVAL}
+                                                ) AS PARKING_METERS
+                                            FROM
+                                                ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING  """  
 
 
-SQL_CONFIG["ROAD_ID_PARKING_MARKING_2W"] = """ SELECT
+SQL_CONFIG["ROAD_ID_NUMBER_OF_TWO_WHEELERS"] = """  SELECT
+                                                        FOOTPATH_SIDE,
+                                                        CEIL((COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * {ROAD_SEGMENT_PERCENTAGE})) AS NUMBER_OF_TWO_WHEELERS
+                                                    FROM
+                                                        ROAD_ID_FOOTPATH_LENGTH  """  
+
+
+SQL_CONFIG["ROAD_ID_PARKING_MARKING_2W"] = """  SELECT
+                                                    FOOTPATH_SIDE,
+                                                    CEIL(
+                                                        (
+                                                            COALESCE(NUMBER_OF_TWO_WHEELERS::NUMERIC, 0) * {PERIMETER} * {LINE_THICKNESS}
+                                                        )
+                                                    ) AS PARKING_MARKING_2W
+                                                FROM
+                                                    ROAD_ID_NUMBER_OF_TWO_WHEELERS  """  
+
+
+SQL_CONFIG["ROAD_ID_NUMBER_OF_FOUR_WHEELERS"] = """     SELECT
                                                             FOOTPATH_SIDE,
                                                             CEIL(
-                                                                (
-                                                                    COALESCE(NUMBER_OF_TWO_WHEELERS::NUMERIC, 0) * 4 * 0.15
-                                                                )
-                                                            ) AS PARKING_MARKING_2W
+                                                                (COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * {ROAD_SEGMENT_PERCENTAGE} / {UNKNOWN})
+                                                            ) AS NUMBER_OF_FOUR_WHEELERS
                                                         FROM
-                                                            ROAD_ID_NUMBER_OF_TWO_WHEELERS  """  
+                                                            ROAD_ID_FOOTPATH_LENGTH  """  
 
 
-SQL_CONFIG["ROAD_ID_NUMBER_OF_FOUR_WHEELERS"] = """    SELECT
-                                                                    FOOTPATH_SIDE,
-                                                                    CEIL(
-                                                                        (COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * 0.15 / 5)
-                                                                    ) AS NUMBER_OF_FOUR_WHEELERS
-                                                                FROM
-                                                                    ROAD_ID_FOOTPATH_LENGTH  """  
-
-
-SQL_CONFIG["ROAD_ID_PARKING_MARKING_4W"] = """ SELECT
-                                                            FOOTPATH_SIDE,
-                                                            CEIL(
-                                                                    (
-                                                                        COALESCE(NUMBER_OF_FOUR_WHEELERS::NUMERIC, 0) * 7 * 0.15
-                                                                    )
-                                                                ) AS PARKING_MARKING_4W
-                                                        FROM
-                                                            ROAD_ID_NUMBER_OF_FOUR_WHEELERS  """                                                                   
+SQL_CONFIG["ROAD_ID_PARKING_MARKING_4W"] = """  SELECT
+                                                    FOOTPATH_SIDE,
+                                                    CEIL(
+                                                            (
+                                                                COALESCE(NUMBER_OF_FOUR_WHEELERS::NUMERIC, 0) * 7 * 0.15
+                                                            )
+                                                        ) AS PARKING_MARKING_4W
+                                                FROM
+                                                    ROAD_ID_NUMBER_OF_FOUR_WHEELERS  """                                                                   
 
 
 
