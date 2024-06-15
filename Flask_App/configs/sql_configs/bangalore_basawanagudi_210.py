@@ -96,7 +96,7 @@ SQL_CONFIG["ROAD_ID_PARKING_SIGNAGE_COUNT"] = """   SELECT
                                                         FOOTPATH_SIDE,
                                                         CEIL(
                                                             COALESCE(ROAD_LENGTH_ALLOCATED_TO_PARKING::NUMERIC, 0) / {INTERVAL}
-                                                        ) AS PARKING_SIGNAGE
+                                                        ) AS PARKING_SIGNAGE_COUNT
                                                     FROM
                                                         ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING  """                                                                
 
@@ -141,7 +141,7 @@ SQL_CONFIG["ROAD_ID_PARKING_MARKING_4W"] = """  SELECT
                                                     FOOTPATH_SIDE,
                                                     CEIL(
                                                             (
-                                                                COALESCE(NUMBER_OF_FOUR_WHEELERS::NUMERIC, 0) * 7 * 0.15
+                                                                COALESCE(NUMBER_OF_FOUR_WHEELERS::NUMERIC, 0) * {PERIMETER} * {LINE_THICKNESS}
                                                             )
                                                         ) AS PARKING_MARKING_4W
                                                 FROM
