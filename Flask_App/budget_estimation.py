@@ -80,14 +80,27 @@ def calculate_budget(database="bangalore", schema="basawanagudi_210"):
                     base_sql = base_sql + config + " AS (" + SQL_CONFIG.get(config) + " ),"
             # remove the last comma in base_sql
             base_sql = base_sql[:-1]
-            base_sql = base_sql.format(SCHEMA=schema)       
-            final_sql_query = base_sql + """ SELECT *, ({}::numeric * {}) AS COST_ESTIMATE FROM {} """.format(parent_sql_config[8:], rate, parent_sql_config)
+            base_sql = base_sql.format(SCHEMA=schema)
+
+            cost_calculation_sql = """  SELECT
+                                            CAST(
+                                                REGEXP_REPLACE(FOOTPATH_SIDE, '[^0-9]', '', 'g') AS INTEGER
+                                            ) AS NUMERIC_PART,
+                                            SUBSTRING(FOOTPATH_SIDE FROM '[^-]*$') AS ALPHABETIC_PART,
+                                            *,
+                                            ({}::numeric * {}) AS COST_ESTIMATE
+                                        FROM
+                                            {}
+                                        ORDER BY
+                                            NUMERIC_PART,
+                                            ALPHABETIC_PART """.format(parent_sql_config[8:], rate, parent_sql_config)
             
-            df = pd.read_sql_query(final_sql_query, conn)
+            final_sql_query = base_sql + cost_calculation_sql
             csv_path = "./results/{0}/{1}.csv".format(database + "_" + schema, child_catergory)
             os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+            df = pd.read_sql_query(final_sql_query, conn)
             df.to_csv(csv_path, index=False)
-            
+
     # close the cursor and connection 
     cur.close()  
     conn.close()
