@@ -39,12 +39,14 @@ SQL_CONFIG["ROAD_ID_PARKING_ISSUE_LENGTH"] = """    SELECT
 
 SQL_CONFIG["ROAD_ID_NO_PARKING_SIGNAGE_COUNT"] = """    SELECT
                                                             ROAD_ID.FOOTPATH_SIDE,
-                                                            RIPIL.NO_PARKING_SIGNAGE_COUNT
+                                                            NO_PARKING_SIGNAGE_COUNT,
+			                                                PARKING_ISSUE_LENGTH
                                                         FROM
                                                             {SCHEMA}.ROAD_ID AS ROAD_ID
                                                             LEFT JOIN (
                                                                 SELECT
                                                                     FOOTPATH_SIDE,
+                                                                    PARKING_ISSUE_LENGTH,
                                                                     CEIL((COALESCE(PARKING_ISSUE_LENGTH, 0) / {INTERVAL})) AS NO_PARKING_SIGNAGE_COUNT
                                                                 FROM
                                                                     ROAD_ID_PARKING_ISSUE_LENGTH
@@ -71,6 +73,8 @@ SQL_CONFIG["ROAD_ID_IS_PARKING_FEASIBLE"] = """     SELECT
 
 SQL_CONFIG["ROAD_ID_PARKING_REQUIRED"] = """    SELECT
                                                     RIITE.FOOTPATH_SIDE,
+                                                    IS_THERE_ENCROACHMENT,
+			                                        IS_PARKING_FEASIBLE,
                                                     CASE
                                                         WHEN IS_THERE_ENCROACHMENT = 'Y'
                                                         AND IS_PARKING_FEASIBLE = 'Y' THEN 'Y'
@@ -83,6 +87,10 @@ SQL_CONFIG["ROAD_ID_PARKING_REQUIRED"] = """    SELECT
 
 SQL_CONFIG["ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING"] = """    SELECT
                                                                     RIPR.FOOTPATH_SIDE,
+                                                                    IS_THERE_ENCROACHMENT,
+                                                                    IS_PARKING_FEASIBLE,
+                                                                    PARKING_REQUIRED,
+                                                                    FOOTPATH_LENGTH,
                                                                     CASE
                                                                         WHEN PARKING_REQUIRED = 'Y' THEN CEIL((COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * {ROAD_SEGMENT_PERCENTAGE}))
                                                                         ELSE 0
@@ -94,6 +102,11 @@ SQL_CONFIG["ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING"] = """    SELECT
 
 SQL_CONFIG["ROAD_ID_PARKING_SIGNAGE_COUNT"] = """   SELECT
                                                         FOOTPATH_SIDE,
+                                                        IS_THERE_ENCROACHMENT,
+                                                        IS_PARKING_FEASIBLE,
+                                                        PARKING_REQUIRED,
+                                                        FOOTPATH_LENGTH,
+                                                        ROAD_LENGTH_ALLOCATED_TO_PARKING,
                                                         CEIL(
                                                             COALESCE(ROAD_LENGTH_ALLOCATED_TO_PARKING::NUMERIC, 0) / {INTERVAL}
                                                         ) AS PARKING_SIGNAGE_COUNT
@@ -103,6 +116,11 @@ SQL_CONFIG["ROAD_ID_PARKING_SIGNAGE_COUNT"] = """   SELECT
 
 SQL_CONFIG["ROAD_ID_PARKING_METERS"] = """  SELECT
                                                 FOOTPATH_SIDE,
+                                                IS_THERE_ENCROACHMENT,
+                                                IS_PARKING_FEASIBLE,
+                                                PARKING_REQUIRED,
+                                                FOOTPATH_LENGTH,
+                                                ROAD_LENGTH_ALLOCATED_TO_PARKING,
                                                 CEIL(
                                                     COALESCE(ROAD_LENGTH_ALLOCATED_TO_PARKING::NUMERIC, 0) / {INTERVAL}
                                                 ) AS PARKING_METERS
@@ -112,6 +130,7 @@ SQL_CONFIG["ROAD_ID_PARKING_METERS"] = """  SELECT
 
 SQL_CONFIG["ROAD_ID_NUMBER_OF_TWO_WHEELERS"] = """  SELECT
                                                         FOOTPATH_SIDE,
+                                                        FOOTPATH_LENGTH,
                                                         CEIL((COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * {ROAD_SEGMENT_PERCENTAGE})) AS NUMBER_OF_TWO_WHEELERS
                                                     FROM
                                                         ROAD_ID_FOOTPATH_LENGTH  """  
@@ -119,6 +138,8 @@ SQL_CONFIG["ROAD_ID_NUMBER_OF_TWO_WHEELERS"] = """  SELECT
 
 SQL_CONFIG["ROAD_ID_PARKING_MARKING_2W"] = """  SELECT
                                                     FOOTPATH_SIDE,
+                                                    FOOTPATH_LENGTH,
+			                                        NUMBER_OF_TWO_WHEELERS,
                                                     CEIL(
                                                         (
                                                             COALESCE(NUMBER_OF_TWO_WHEELERS::NUMERIC, 0) * {PERIMETER} * {LINE_THICKNESS}
@@ -130,6 +151,7 @@ SQL_CONFIG["ROAD_ID_PARKING_MARKING_2W"] = """  SELECT
 
 SQL_CONFIG["ROAD_ID_NUMBER_OF_FOUR_WHEELERS"] = """     SELECT
                                                             FOOTPATH_SIDE,
+                                                            FOOTPATH_LENGTH,
                                                             CEIL(
                                                                 (COALESCE(FOOTPATH_LENGTH::NUMERIC, 0) * {ROAD_SEGMENT_PERCENTAGE} / {UNKNOWN})
                                                             ) AS NUMBER_OF_FOUR_WHEELERS
@@ -139,6 +161,8 @@ SQL_CONFIG["ROAD_ID_NUMBER_OF_FOUR_WHEELERS"] = """     SELECT
 
 SQL_CONFIG["ROAD_ID_PARKING_MARKING_4W"] = """  SELECT
                                                     FOOTPATH_SIDE,
+                                                    FOOTPATH_LENGTH,
+	                                                NUMBER_OF_FOUR_WHEELERS,
                                                     CEIL(
                                                             (
                                                                 COALESCE(NUMBER_OF_FOUR_WHEELERS::NUMERIC, 0) * {PERIMETER} * {LINE_THICKNESS}
