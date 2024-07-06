@@ -4,8 +4,8 @@ SQL_CONFIG["COMPACT_TRANSFORMER"] = """ SELECT
                                             ROAD_ID.FOOTPATH_SIDE,
                                             COUNT(RITIC.FOOTPATH_SIDE) AS BUDGET_CALCULATION_QUANTITY
                                         FROM
-                                            foothpath_audit.ROAD_ID AS ROAD_ID
-                                            LEFT JOIN foothpath_audit.ISSUE_POINT AS RITIC ON ROAD_ID.FOOTPATH_SIDE = RITIC.FOOTPATH_SIDE
+                                            footpath_audit.ROAD_ID AS ROAD_ID
+                                            LEFT JOIN footpath_audit.ISSUE_POINT AS RITIC ON ROAD_ID.FOOTPATH_SIDE = RITIC.FOOTPATH_SIDE
                                             AND RITIC.ISSUE_TYPE = 'B-Transformers'
                                         GROUP BY
                                             ROAD_ID.FOOTPATH_SIDE """   
@@ -16,13 +16,13 @@ SQL_CONFIG["PARKING_SIGNAGE"] = """ WITH
                                                 ROAD_ID.FOOTPATH_SIDE,
                                                 COALESCE(PARKING_ISSUE_LENGTH, 0) AS PARKING_ISSUE_LENGTH
                                             FROM
-                                                foothpath_audit.ROAD_ID AS ROAD_ID
+                                                footpath_audit.ROAD_ID AS ROAD_ID
                                                 LEFT JOIN (
                                                     SELECT
                                                         FOOTPATH_SIDE,
                                                         SUM(CEIL(LENGTH)) AS PARKING_ISSUE_LENGTH
                                                     FROM
-                                                        foothpath_audit.ISSUE_LINE
+                                                        footpath_audit.ISSUE_LINE
                                                     WHERE
                                                         ISSUE_TYPE = 'B-Encroachment by parking'
                                                     GROUP BY
@@ -44,7 +44,7 @@ SQL_CONFIG["PARKING_SIGNAGE"] = """ WITH
                                                 FOOTPATH_SIDE,
                                                 IS_PARKING_FEASIBLE
                                             FROM
-                                                foothpath_audit.POST_AUDIT_QUESTIONS PAQ
+                                                footpath_audit.POST_AUDIT_QUESTIONS PAQ
                                         ),
                                         ROAD_ID_PARKING_REQUIRED AS (
                                             SELECT
@@ -64,7 +64,7 @@ SQL_CONFIG["PARKING_SIGNAGE"] = """ WITH
                                                 FOOTPATH_SIDE,
                                                 FOOTPATH_LENGTH
                                             FROM
-                                                foothpath_audit.MANUAL_ENTRY
+                                                footpath_audit.MANUAL_ENTRY
                                         ),
                                         ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING AS (
                                             SELECT
@@ -99,13 +99,13 @@ SQL_CONFIG["PARKING_METERS"] = """  WITH
                                                 ROAD_ID.FOOTPATH_SIDE,
                                                 COALESCE(PARKING_ISSUE_LENGTH, 0) AS PARKING_ISSUE_LENGTH
                                             FROM
-                                                foothpath_audit.ROAD_ID AS ROAD_ID
+                                                footpath_audit.ROAD_ID AS ROAD_ID
                                                 LEFT JOIN (
                                                     SELECT
                                                         FOOTPATH_SIDE,
                                                         SUM(CEIL(LENGTH)) AS PARKING_ISSUE_LENGTH
                                                     FROM
-                                                        foothpath_audit.ISSUE_LINE
+                                                        footpath_audit.ISSUE_LINE
                                                     WHERE
                                                         ISSUE_TYPE = 'B-Encroachment by parking'
                                                     GROUP BY
@@ -127,7 +127,7 @@ SQL_CONFIG["PARKING_METERS"] = """  WITH
                                                 FOOTPATH_SIDE,
                                                 IS_PARKING_FEASIBLE
                                             FROM
-                                                foothpath_audit.POST_AUDIT_QUESTIONS PAQ
+                                                footpath_audit.POST_AUDIT_QUESTIONS PAQ
                                         ),
                                         ROAD_ID_PARKING_REQUIRED AS (
                                             SELECT
@@ -147,7 +147,7 @@ SQL_CONFIG["PARKING_METERS"] = """  WITH
                                                 FOOTPATH_SIDE,
                                                 FOOTPATH_LENGTH
                                             FROM
-                                                foothpath_audit.MANUAL_ENTRY
+                                                footpath_audit.MANUAL_ENTRY
                                         ),
                                         ROAD_ID_ROAD_LENGTH_ALLOCATED_TO_PARKING AS (
                                             SELECT
