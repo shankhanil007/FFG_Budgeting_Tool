@@ -1,0 +1,42 @@
+with ctx as (SELECT
+    r.footpath_side,
+    i.issue_type,
+    i.type,
+    CASE
+        WHEN i.type = 'line' THEN COALESCE(SUM(CEIL(l.length)), 0)
+        WHEN i.type = 'point' THEN COALESCE(COUNT(p.issue_type), 0)
+    END AS issue_count_or_length
+FROM
+    footpath_audit.road_id r
+CROSS JOIN
+    footpath_audit.categories i
+LEFT JOIN
+    footpath_audit.issue_line2 l ON r.footpath_side = l.footpath_side AND i.issue_type = l.issue_type AND i.type = 'line'
+LEFT JOIN
+    footpath_audit2.issue_point p ON r.footpath_side = p.footpath_side AND i.issue_type = p.issue_type AND i.type = 'point' 
+GROUP BY
+    r.footpath_side, i.issue_type,  i.type
+ORDER BY
+    r.footpath_side, i.issue_type)
+
+-- select * from ctx where issue_type in ('B-Encroachment by parking', 'B-Transformers')
+
+select * from ctx
+
+
+
+user = os.environ.get("USER")
+password = os.environ.get("PASSWORD")
+host = os.environ.get("HOST")
+port = os.environ.get("PORT")
+database = os.environ.get("DATABASE")
+conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port) 
+    
+
+df = pd.read_sql_query(SQL_QUERY, conn)
+
+# Pivoting the table
+pivot_df = df.pivot_table(index="footpath_side", columns="issue_type", values="issue_count_or_length", aggfunc="sum", fill_value=0).reset_index()
+
+# Display the resulting DataFrame
+pivot_df
